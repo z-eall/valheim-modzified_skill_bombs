@@ -42,16 +42,18 @@ internal static class Attack_FireProjectileBurst_Steadiness_Patch
 
     if (spreadApplied && __instance != null)
     {
-      if (Player.m_localPlayer != null)
-      {
-        BombsXp.BeginThrow(Player.m_localPlayer);
-      }
-
       __state.SpreadApplied = true;
       __state.Accuracy = __instance.m_projectileAccuracy;
       __state.SkillAccuracy = __instance.m_skillAccuracy;
       __instance.m_projectileAccuracy = spread;
       __instance.m_skillAccuracy = false;
+    }
+
+    if (__instance != null
+        && Player.m_localPlayer != null
+        && ThrowSteadiness.IsLocalArmedBomb(__instance))
+    {
+      BombsXp.BeginThrow(Player.m_localPlayer, ThrowSteadiness.WeaponPrefabId(__instance.m_weapon));
     }
 
     if (loftApplied && __instance != null)

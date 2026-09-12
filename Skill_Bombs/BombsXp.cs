@@ -22,9 +22,10 @@ internal static class BombsXp
   {
     public long ThrowId;
     public long ThrowerPlayerId;
+    public string? PrefabId;
   }
 
-  internal static void BeginThrow(Player player)
+  internal static void BeginThrow(Player player, string? prefabId)
   {
     if (player == null || !BombsSkill.Ready)
     {
@@ -37,7 +38,7 @@ internal static class BombsXp
       return;
     }
 
-    _pending = new Pending { ThrowId = _nextThrowId++, ThrowerPlayerId = id };
+    _pending = new Pending { ThrowId = _nextThrowId++, ThrowerPlayerId = id, PrefabId = prefabId };
   }
 
   internal static void EndThrow()
@@ -83,7 +84,7 @@ internal static class BombsXp
       return;
     }
 
-    ApplyMark(spawned, src.ThrowId, src.ThrowerPlayerId);
+    ApplyMark(spawned, src.ThrowId, src.ThrowerPlayerId, src.PrefabId);
     TryStampZdo(spawned);
     CombatDamage.TryApplyBlobStars(spawned);
   }
@@ -122,9 +123,39 @@ internal static class BombsXp
     public bool IsValid => ThrowId != 0L && ThrowerPlayerId != 0L;
   }
 
-  internal static void TryCreditFromProjectile(Projectile projectile, Character? victim)
+  internal static void TryCreditFromProjectile(Projectile projectile, Character? victim, Collider? collider)
   {
-    TryCredit(FirstValid(ReadMark(projectile.gameObject), ReadStamp(projectile.m_owner)), victim);
+    ThrowRef mark = FirstValid(ReadMark(projectile.gameObject), ReadStamp(projectile.m_owner));
+    if (victim != null)
+    {
+      TryCredit(mark, victim);
+      return;
+    }
+
+    if (Settings.BombSmokeGroundXp == null || !Settings.BombSmokeGroundXp.Value)
+    {
+      return;
+    }
+
+    if (!IsBombSmokeMarked(projectile) || !IsGroundCollider(collider))
+    {
+      return;
+    }
+
+    TryCredit(mark, victim: null, allowNoVictim: true);
+  }
+
+  private static bool IsBombSmokeMarked(Projectile projectile)
+  {
+    BombsThrowMark? mark = projectile != null ? projectile.GetComponent<BombsThrowMark>() : null;
+    return mark != null
+      && mark.PrefabId != null
+      && mark.PrefabId.Equals("BombSmoke", System.StringComparison.Ordinal);
+  }
+
+  private static bool IsGroundCollider(Collider? collider)
+  {
+    return collider != null && collider.gameObject.GetComponent<Heightmap>() != null;
   }
 
   internal static void TryCreditFromAoe(Aoe aoe, Character? victim)
@@ -151,7 +182,7 @@ internal static class BombsXp
 
     if (_pending.HasValue)
     {
-      ApplyMark(go, _pending.Value.ThrowId, _pending.Value.ThrowerPlayerId);
+      ApplyMark(go, _pending.Value.ThrowId, _pending.Value.ThrowerPlayerId, _pending.Value.PrefabId);
       return;
     }
 
@@ -162,10 +193,10 @@ internal static class BombsXp
 
     if (_spawnSource != null)
     {
-      ThrowRef fromVial = ReadMark(_spawnSource.gameObject);
-      if (fromVial.IsValid)
+      BombsThrowMark? src = _spawnSource.GetComponent<BombsThrowMark>();
+      if (src != null && src.IsValid)
       {
-        ApplyMark(go, fromVial.ThrowId, fromVial.ThrowerPlayerId);
+        ApplyMark(go, src.ThrowId, src.ThrowerPlayerId, src.PrefabId);
         return;
       }
     }
@@ -173,15 +204,19 @@ internal static class BombsXp
     ThrowRef fromOwner = ReadStamp(owner);
     if (fromOwner.IsValid)
     {
-      ApplyMark(go, fromOwner.ThrowId, fromOwner.ThrowerPlayerId);
+      ApplyMark(go, fromOwner.ThrowId, fromOwner.ThrowerPlayerId, prefabId: null);
     }
   }
 
-  private static void ApplyMark(GameObject go, long throwId, long throwerId)
+  private static void ApplyMark(GameObject go, long throwId, long throwerId, string? prefabId)
   {
     BombsThrowMark mark = go.GetComponent<BombsThrowMark>() ?? go.AddComponent<BombsThrowMark>();
     mark.ThrowId = throwId;
     mark.ThrowerPlayerId = throwerId;
+    if (prefabId != null)
+    {
+      mark.PrefabId = prefabId;
+    }
   }
 
   private static ThrowRef ReadMark(GameObject go)
@@ -229,14 +264,21 @@ internal static class BombsXp
     return a.IsValid ? a : b;
   }
 
-  private static void TryCredit(ThrowRef mark, Character? victim)
+  private static void TryCredit(ThrowRef mark, Character? victim, bool allowNoVictim = false)
   {
-    if (!BombsSkill.Ready || !mark.IsValid || victim == null)
+    if (!BombsSkill.Ready || !mark.IsValid)
     {
       return;
     }
 
-    if (victim is Player victimPlayer && victimPlayer.GetPlayerID() == mark.ThrowerPlayerId)
+    if (victim == null)
+    {
+      if (!allowNoVictim)
+      {
+        return;
+      }
+    }
+    else if (victim is Player victimPlayer && victimPlayer.GetPlayerID() == mark.ThrowerPlayerId)
     {
       return;
     }
@@ -283,7 +325,7 @@ internal static class BombsXp
 
     float level = local.GetSkills() != null ? local.GetSkills().GetSkillLevel(BombsSkill.Type) : 0f;
     int pct = Mathf.RoundToInt(ThrowSteadiness.CurrentSteadiness() * 100f);
-    string hit = victim != null ? victim.m_name : "?";
+    string hit = victim != null ? victim.m_name : "ground";
     SkillBombsPlugin.LogAt(LogLevel.Debug,
       $"Bombs XP: throw {throwId} hit {hit}, Bombs {level:0.#}, throw steadiness {pct}%");
   }

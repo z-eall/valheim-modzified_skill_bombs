@@ -30,7 +30,7 @@ internal static class Projectile_OnHit_BombsXp_Patch
   private static void Postfix(Projectile __instance, Collider collider)
   {
     Character? victim = BombsXpHitUtil.CharacterFromCollider(collider);
-    BombsXp.TryCreditFromProjectile(__instance, victim);
+    BombsXp.TryCreditFromProjectile(__instance, victim, collider);
   }
 }
 

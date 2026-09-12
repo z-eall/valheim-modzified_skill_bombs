@@ -8,9 +8,10 @@ internal static class Settings
 {
   internal const string SectionGeneral = "1. General";
   internal const string SectionCombat = "2. Damage and stamina";
-  internal const string SectionLogging = "3. Logging";
   /// <summary>Temporary feel-tune only — remove after [Lock feel-good launch help] hardcodes the constant.</summary>
   internal const string SectionTemporary = "9. Temporary launch tune";
+  /// <summary>Last numbered section; Log levels is advanced-only so the block stays out of the default CM view.</summary>
+  internal const string SectionLogging = "10. Logging";
   internal const string DefaultPrefabList =
     "BombOoze, BombBile, BombSmoke, BombLava, BombDynamite, BombBlob_Poison, BombBlob_PoisonElite, BombBlob_Frost, BombBlob_Tar, BombBlob_Lava, BombBlob_Morkhalla";
 
@@ -54,6 +55,8 @@ internal static class Settings
   internal static ConfigEntry<bool> FreeThrowBonusText { get; private set; } = null!;
   internal static ConfigEntry<string> FreeThrowText { get; private set; } = null!;
   internal static ConfigEntry<bool> FreeThrowBonusEffect { get; private set; } = null!;
+  /// <summary>Host. BombSmoke flask→ground also trains Bombs (Heimdiver call-in). Default off.</summary>
+  internal static ConfigEntry<bool> BombSmokeGroundXp { get; private set; } = null!;
 
   internal static void Init(ConfigFile config)
   {
@@ -64,11 +67,6 @@ internal static class Settings
       ModRequired = false,
       IsLocked = true
     };
-
-    LogLevels = BindLocal(config, SectionLogging, "Log levels", DefaultLogLevels,
-      new ConfigDescription(
-        "Same flags as BepInEx Logging.Disk / Logging.Console. Throw and XP traces are Debug; they only reach LogOutput.log when Debug is checked here and in BepInEx.cfg.",
-        tags: new object[] { new ConfigurationManagerAttributes { Order = 1 } }));
 
     var percent = new AcceptableValueRange<int>(0, 100);
     SteadinessAtSkill0 = BindSynced(config, SectionGeneral, "Throw steadiness at skill 0", 0,
@@ -87,15 +85,15 @@ internal static class Settings
 
     ScaleThrowDamage = BindSynced(config, SectionCombat, "Scale throw damage", false,
       new ConfigDescription(
-        "Off = today's flask/cloud/blob-star damage. On = staff-style flask grow, cloud floor-at-today (up to ~2.5×), blob star chance. Blob face-hits (5 blunt) scale too. Host.",
+        "Off = today's flask/cloud/blob-star damage. On = staff-style flask grow, cloud floor-at-today (up to ~2.5×), blob star chance. Blob face-hits (5 blunt) scale too. Server-synced.",
         tags: new object[] { new ConfigurationManagerAttributes { Order = 6 } }));
     ScaleThrowStamina = BindSynced(config, SectionCombat, "Scale throw stamina", false,
       new ConfigDescription(
-        "Off = full throw stamina. On = up to 33% cheaper at Bombs skill max (vanilla skill discount). Host.",
+        "Off = full throw stamina. On = up to 33% cheaper at Bombs skill max (vanilla skill discount). Server-synced.",
         tags: new object[] { new ConfigurationManagerAttributes { Order = 5 } }));
     FreeThrow = BindSynced(config, SectionCombat, "Free throw", false,
       new ConfigDescription(
-        "Off = always consume the bomb. On = chance to keep it after a throw. Host.",
+        "Off = always consume the bomb. On = chance to keep it after a throw. Server-synced.",
         tags: new object[] { new ConfigurationManagerAttributes { Order = 4 } }));
     FreeThrowChanceAtSkillMax = BindSynced(config, SectionCombat, "Free throw chance at skill max", 25,
       new ConfigDescription(
@@ -108,17 +106,27 @@ internal static class Settings
         tags: new object[] { new ConfigurationManagerAttributes { Order = 2 } }));
     FreeThrowText = BindSynced(config, SectionCombat, "Free throw text", "Freethrow!",
       new ConfigDescription(
-        "Host. Message shown on a free throw proc when Free throw bonus text is on. White DamageText (Normal).",
+        "Server-synced. Message shown on a free throw proc when Free throw bonus text is on. White DamageText (Normal).",
         tags: new object[] { new ConfigurationManagerAttributes { Order = 1 } }));
     FreeThrowBonusEffect = BindLocal(config, SectionCombat, "Free throw bonus effect", true,
       new ConfigDescription(
         "Local. When a free throw procs, play the vanilla craft bonus effect if available.",
         tags: new object[] { new ConfigurationManagerAttributes { Order = 0 } }));
+    BombSmokeGroundXp = BindSynced(config, SectionCombat, "BombSmoke ground XP", false,
+      new ConfigDescription(
+        "Off = BombSmoke trains only when the flask hits a creature. On = also trains when the flask hits the ground — made for DhakhaR's Heimdiver server (Helldivers in Valheim). Check out their project. Server-synced.",
+        tags: new object[] { new ConfigurationManagerAttributes { Order = -1 } }));
 
     TempLaunchHelpStrength = BindLocal(config, SectionTemporary, "Launch help strength", 1f,
       new ConfigDescription(
         "TEMPORARY — hand-edit any float (no cap). Multiplies ballistic launch aim (× Bombs steadiness). 0 = vanilla aim; 1 ≈ full gravity-aware aim at ≤10 m; try 1.5–3 if still low. Beyond 10 m help falls off. Local only.",
         tags: new object[] { new ConfigurationManagerAttributes { Order = 1, ShowRangeAsPercent = false } }));
+
+    // Bound last + section 10 so CM keeps Logging at the end; IsAdvanced hides it until Advanced is ticked.
+    LogLevels = BindLocal(config, SectionLogging, "Log levels", DefaultLogLevels,
+      new ConfigDescription(
+        "Same flags as BepInEx Logging.Disk / Logging.Console. Throw and XP traces are Debug; they only reach LogOutput.log when Debug is checked here and in BepInEx.cfg.",
+        tags: new object[] { new ConfigurationManagerAttributes { Order = 1, IsAdvanced = true } }));
 
     SteadinessAtSkill0.SettingChanged += (_, _) => WarnInvertedEnds();
     SteadinessAtSkillMax.SettingChanged += (_, _) => WarnInvertedEnds();
@@ -140,6 +148,7 @@ internal static class Settings
     LogLoaded(FreeThrowBonusText);
     LogLoaded(FreeThrowText);
     LogLoaded(FreeThrowBonusEffect);
+    LogLoaded(BombSmokeGroundXp);
     LogLoaded(TempLaunchHelpStrength);
     WarnInvertedEnds();
     ThrowSteadiness.OnAllowlistChanged();
@@ -190,4 +199,5 @@ internal sealed class ConfigurationManagerAttributes
 {
   public int? Order;
   public bool? ShowRangeAsPercent;
+  public bool? IsAdvanced;
 }

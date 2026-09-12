@@ -5,6 +5,6 @@
     <BepInExPath>$(ValheimGamePath)\BepInEx</BepInExPath>
     <CorlibPath>$(ValheimGamePath)\valheim_Data\Managed</CorlibPath>
     <PublicizedAssembliesPath>$(ValheimGamePath)\valheim_Data\Managed\publicized_assemblies</PublicizedAssembliesPath>
-    <CopyOutputDLLPath>$(MSBuildThisFileDirectory)plugins</CopyOutputDLLPath>
+    <CopyOutputDLLPath>$(MSBuildThisFileDirectory)..\plugins</CopyOutputDLLPath>
   </PropertyGroup>
 </Project>
