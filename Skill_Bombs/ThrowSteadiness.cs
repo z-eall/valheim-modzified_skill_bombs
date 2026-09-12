@@ -280,19 +280,29 @@ internal static class ThrowSteadiness
       return false;
     }
 
-    // Full geometric+ballistic correction through 10 m; beyond that, help fades (far lobs stay lob-y).
-    float rangeFactor = dist <= Settings.LaunchHelpFullRangeMeters
+    // Near fade (wall-face / inside-collider) × far fade (long lobs stay lob-y).
+    float near = dist <= Settings.LaunchHelpNearFadeStartMeters
+      ? 0f
+      : dist >= Settings.LaunchHelpNearFadeEndMeters
+        ? 1f
+        : (dist - Settings.LaunchHelpNearFadeStartMeters)
+          / (Settings.LaunchHelpNearFadeEndMeters - Settings.LaunchHelpNearFadeStartMeters);
+    float far = dist <= Settings.LaunchHelpFullRangeMeters
       ? 1f
       : Settings.LaunchHelpFullRangeMeters / dist;
+    float rangeFactor = near * far;
 
     float full = Vector3.SignedAngle(vanillaAim, desired, axis);
-    launchAngleDelta = full * help * rangeFactor;
+    launchAngleDelta = Mathf.Clamp(
+      full * help * rangeFactor,
+      -Settings.LaunchHelpMaxAbsDegrees,
+      Settings.LaunchHelpMaxAbsDegrees);
 
     if (SkillBombsPlugin.Allows(LogLevel.Debug))
     {
       string id = WeaponPrefabId(attack.m_weapon) ?? "?";
       SkillBombsPlugin.LogAt(LogLevel.Debug,
-        $"launch ballistics {id}: dist {dist:0.#}m, vel {vel:0.#}, g {gravity:0.#}, drop {drop:0.###}m, range× {rangeFactor:0.###}, help {help:0.###}, Δ {launchAngleDelta:0.###}°");
+        $"launch ballistics {id}: dist {dist:0.#}m, vel {vel:0.#}, g {gravity:0.#}, drop {drop:0.###}m, near× {near:0.###}, far× {far:0.###}, help {help:0.###}, Δ {launchAngleDelta:0.###}°");
     }
 
     return true;
@@ -339,7 +349,8 @@ internal static class ThrowSteadiness
     Vector3 forward = cam.forward;
     if (Physics.Raycast(origin, forward, out RaycastHit hit, 80f))
     {
-      aimPoint = hit.point;
+      float along = Mathf.Max(hit.distance, Settings.LaunchAimMinDistanceMeters);
+      aimPoint = origin + forward * along;
       return true;
     }
 

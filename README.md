@@ -15,9 +15,8 @@ Install on all clients and the server. Server-synced settings follow the host wh
 - Less random miss and slight aim help toward the crosshair as skill rises. Skill 0 matches vanilla throws.
 - XP once per throw when a creature is first hurt by that throw:
   - Most bombs: vial hit, poison/blast cloud, or thrown blob.
-  - **BombSmoke:** vial hit only by default (5 blunt). The smoke cloud does not train Bombs.
-  - Optional **BombSmoke ground XP** (off by default): flask hitting the ground also trains — for Heimdiver-style stratagem throws.
-- Empty field (unless that toggle is on) and hitting yourself give no XP.
+  - **BombSmoke:** vial hit only (5 blunt). The smoke cloud does not train Bombs.
+- Empty field and hitting yourself give no XP.
 - Optional server-synced toggles: scale throw damage, cheaper throw stamina, chance to keep the bomb (free throw).
 
 ## How to use
@@ -28,6 +27,13 @@ Install on all clients and the server. Server-synced settings follow the host wh
 4. Optional combat options are in config section `2. Damage and stamina` (all off until you turn them on).
 
 Listed bombs use the normal bomb throw. Spears and staffs are ignored even if listed.
+
+## Heimdiver Science
+
+Optional host section for DhakhaR's **HEIMDIVERS** (Helldivers II in Valheim with Expand World Mods). [Intro video](https://youtu.be/yoscS1CJWTE?si=gIVeFDL8KCgtH9w5) · [Heimdiver Discord](https://discord.gg/JCeymsZvE7)
+
+- **Heimdiver Bomb Override** (off by default): Heimdiver rules for a fixed HD set (`BombSmoke`, `BombBlob_Lava`, `BombBlob_Frost`, `BombBlob_Poison`, `BombLava`, `BombDynamite`). Smoke and the three HD blobs keep vial blunt but no longer spawn their cloud / blob on hit. HD throws train Bombs from a shared throw counter (about every 1–5 throws) instead of hits. Leave off for normal Skill_Bombs play. Fine on other worlds if it fits your play.
+- **Dynamite land distance**: how far **BombDynamite** travels when the master override is on. `1` matches the vanilla short throw; raise it to send the bomb farther. Relative scale — not meters. Only BombDynamite.
 
 ## Mod compatibility
 
@@ -40,14 +46,12 @@ File: `BepInEx/config/skill_bombs.cfg`.
 
 Server-synced keys follow the host when the server has the mod. Free-throw feedback toggles and temporary launch tune stay local.
 
-- Throw steadiness at skill 0 / max: how steady untrained vs max skill throws are (0 = vanilla miss, 100 = no random miss + full aim help).
+- Throw steadiness at skill 0 / max: how steady throws are (0 = vanilla miss, 100 = no miss + full aim help).
 - How steadiness improves: Linear, Quick start, or Slow start.
-- Bomb prefabs: comma-separated ids (exact case). Must use the bomb throw animation.
-- Scale throw damage: stronger flask hits and clouds; blob star chance. Lava/dynamite flask stay 0. Smoke cloud is not grown.
-- Scale throw stamina: up to 33% cheaper throws at skill max.
-- Free throw: chance to keep the bomb (`chance at skill max` × skill). Default max chance 25%.
-- Free throw text / bonus text / bonus effect: message and feedback when a free throw procs.
-- BombSmoke ground XP: off = creature flask hit only; on = ground hits also train. Server-synced.
+- Bomb prefabs: which items use Bombs (comma-separated ids, exact case; must use the bomb throw).
+- Scale throw damage / stamina / free throw: optional combat toggles (off until you turn them on).
+- Free throw chance / text / bonus text / bonus effect: free-throw odds and feedback.
+- Heimdiver Bomb Override / Dynamite land distance: see **Heimdiver Science** above.
 - Launch help strength: temporary local feel tune (will be removed once locked).
 
 ## Console commands

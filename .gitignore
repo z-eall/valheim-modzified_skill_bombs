@@ -8,5 +8,5 @@ obj/
 # Local machine paths — copy from environment.props.example
 environment.props
 
-# Build / Gale working copy — not source history
+# Build / local playtest copy — not source history
 plugins/

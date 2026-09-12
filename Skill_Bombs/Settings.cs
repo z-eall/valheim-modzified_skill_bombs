@@ -8,6 +8,7 @@ internal static class Settings
 {
   internal const string SectionGeneral = "1. General";
   internal const string SectionCombat = "2. Damage and stamina";
+  internal const string SectionHeimdiver = "3. Heimdiver Science";
   /// <summary>Temporary feel-tune only — remove after [Lock feel-good launch help] hardcodes the constant.</summary>
   internal const string SectionTemporary = "9. Temporary launch tune";
   /// <summary>Last numbered section; Log levels is advanced-only so the block stays out of the default CM view.</summary>
@@ -28,8 +29,20 @@ internal static class Settings
   /// <summary>Along-ray fallback when the crosshair ray hits nothing.</summary>
   internal const float LaunchAimFallbackDistance = 20f;
 
+  /// <summary>Ignore camera hits closer than this; aim at this distance along the ray instead (wall-face / inside-collider guard).</summary>
+  internal const float LaunchAimMinDistanceMeters = 4f;
+
   /// <summary>Full ballistic+geometric launch help through this distance; beyond, help scales down (~10/dist).</summary>
   internal const float LaunchHelpFullRangeMeters = 10f;
+
+  /// <summary>Spawn→aim distance below which launch help is fully faded (near wall / boulder).</summary>
+  internal const float LaunchHelpNearFadeStartMeters = 3f;
+
+  /// <summary>Spawn→aim distance at which near-fade reaches full help (then far fade still applies past full-range).</summary>
+  internal const float LaunchHelpNearFadeEndMeters = 6f;
+
+  /// <summary>Soft cap on applied launch-angle delta (degrees) after help × range factors.</summary>
+  internal const float LaunchHelpMaxAbsDegrees = 15f;
 
   /// <summary>Default vial gravity when the projectile prefab has no readable <c>m_gravity</c>.</summary>
   internal const float DefaultBombGravity = 10f;
@@ -55,8 +68,16 @@ internal static class Settings
   internal static ConfigEntry<bool> FreeThrowBonusText { get; private set; } = null!;
   internal static ConfigEntry<string> FreeThrowText { get; private set; } = null!;
   internal static ConfigEntry<bool> FreeThrowBonusEffect { get; private set; } = null!;
-  /// <summary>Host. BombSmoke flask→ground also trains Bombs (Heimdiver call-in). Default off.</summary>
-  internal static ConfigEntry<bool> BombSmokeGroundXp { get; private set; } = null!;
+  /// <summary>Host. Master gate for hardcoded HD bombs (strip / throw-counter / Dynamite land).</summary>
+  internal static ConfigEntry<bool> HeimdiverBombOverride { get; private set; } = null!;
+  /// <summary>Host. Relative how-far for BombDynamite under override (1 = vanilla). Not meters; maps to throw speed in code.</summary>
+  internal static ConfigEntry<float> DynamiteLandDistance { get; private set; } = null!;
+
+  /// <summary>Vanilla BombDynamite <c>Attack.m_projectileVel</c> — land distance 1 maps here.</summary>
+  internal const float VanillaDynamiteProjectileVel = 2f;
+
+  /// <summary>CM slider span for <see cref="DynamiteLandDistance"/> (relative scale, not meters).</summary>
+  internal static readonly AcceptableValueRange<float> DynamiteLandDistanceRange = new(0.25f, 50f);
 
   internal static void Init(ConfigFile config)
   {
@@ -70,56 +91,107 @@ internal static class Settings
 
     var percent = new AcceptableValueRange<int>(0, 100);
     SteadinessAtSkill0 = BindSynced(config, SectionGeneral, "Throw steadiness at skill 0", 0,
-      new ConfigDescription("Untrained throw steadiness (percent). 0 = that bomb's vanilla spread.", percent,
+      new ConfigDescription(
+        "How steady throws are at Bombs skill 0.\n" +
+        "0 keeps that bomb's normal vanilla miss.\n" +
+        "100 removes random miss and uses full aim help.",
+        percent,
         new ConfigurationManagerAttributes { Order = 4, ShowRangeAsPercent = false }));
     SteadinessAtSkillMax = BindSynced(config, SectionGeneral, "Throw steadiness at skill max", 100,
-      new ConfigDescription("Throw steadiness at this skill's live ceiling (percent). 100 = no spread.", percent,
+      new ConfigDescription(
+        "How steady throws are at the Bombs skill ceiling.\n" +
+        "0 keeps that bomb's normal vanilla miss.\n" +
+        "100 removes random miss and uses full aim help.",
+        percent,
         new ConfigurationManagerAttributes { Order = 3, ShowRangeAsPercent = false }));
     HowSteadinessImproves = BindSynced(config, SectionGeneral, "How steadiness improves", CurveLinear,
-      new ConfigDescription("Linear. Quick start: more gain early. Slow start: more gain near max.",
+      new ConfigDescription(
+        "How steadiness grows between skill 0 and skill max.\n" +
+        "Linear: even gain as skill rises.\n" +
+        "Quick start: more gain early.\n" +
+        "Slow start: more gain near max.",
         new AcceptableValueList<string>(CurveLinear, CurveQuickStart, CurveSlowStart),
         new ConfigurationManagerAttributes { Order = 2 }));
     BombPrefabs = BindSynced(config, SectionGeneral, "Bomb prefabs", DefaultPrefabList,
-      new ConfigDescription("Comma-separated prefab ids, exact case. Must also use throw_bomb. Listed spears and staffs are ignored.",
+      new ConfigDescription(
+        "Which items use the Bombs skill.\n" +
+        "Use comma-separated prefab ids with exact spelling and case.\n" +
+        "The item must use the normal bomb throw.\n" +
+        "Spears and staffs on this list are ignored.",
         tags: new object[] { new ConfigurationManagerAttributes { Order = 1 } }));
 
     ScaleThrowDamage = BindSynced(config, SectionCombat, "Scale throw damage", false,
       new ConfigDescription(
-        "Off = today's flask/cloud/blob-star damage. On = staff-style flask grow, cloud floor-at-today (up to ~2.5×), blob star chance. Blob face-hits (5 blunt) scale too. Server-synced.",
+        "When on, Bombs skill can raise throw damage.\n" +
+        "Flask hits and clouds grow with skill.\n" +
+        "Thrown blobs can roll extra stars.\n" +
+        "Lava and dynamite flask damage stay 0.\n" +
+        "Smoke clouds are not grown.\n" +
+        "Server-synced.",
         tags: new object[] { new ConfigurationManagerAttributes { Order = 6 } }));
     ScaleThrowStamina = BindSynced(config, SectionCombat, "Scale throw stamina", false,
       new ConfigDescription(
-        "Off = full throw stamina. On = up to 33% cheaper at Bombs skill max (vanilla skill discount). Server-synced.",
+        "When on, throws cost less stamina as Bombs skill rises.\n" +
+        "At skill max, cost can drop by about one third.\n" +
+        "When off, throw stamina stays full.\n" +
+        "Server-synced.",
         tags: new object[] { new ConfigurationManagerAttributes { Order = 5 } }));
     FreeThrow = BindSynced(config, SectionCombat, "Free throw", false,
       new ConfigDescription(
-        "Off = always consume the bomb. On = chance to keep it after a throw. Server-synced.",
+        "When on, a throw may keep the bomb instead of using it up.\n" +
+        "When off, every throw always consumes the bomb.\n" +
+        "Server-synced.",
         tags: new object[] { new ConfigurationManagerAttributes { Order = 4 } }));
     FreeThrowChanceAtSkillMax = BindSynced(config, SectionCombat, "Free throw chance at skill max", 25,
       new ConfigDescription(
-        "Percent chance at the Bombs skill ceiling when Free throw is on. Actual chance = this × skill factor (0 at skill 0).",
+        "Chance to keep the bomb at the Bombs skill ceiling, when Free throw is on.\n" +
+        "Real chance = this value × your skill factor (0 at skill 0).",
         percent,
         new ConfigurationManagerAttributes { Order = 3, ShowRangeAsPercent = false }));
     FreeThrowBonusText = BindLocal(config, SectionCombat, "Free throw bonus text", true,
       new ConfigDescription(
-        "Local. When a free throw procs, show DamageText (white Normal) using Free throw text.",
+        "Local only.\n" +
+        "When a free throw procs, show the Free throw text on screen.",
         tags: new object[] { new ConfigurationManagerAttributes { Order = 2 } }));
     FreeThrowText = BindSynced(config, SectionCombat, "Free throw text", "Freethrow!",
       new ConfigDescription(
-        "Server-synced. Message shown on a free throw proc when Free throw bonus text is on. White DamageText (Normal).",
+        "Message shown when a free throw procs and Free throw bonus text is on.\n" +
+        "Server-synced.",
         tags: new object[] { new ConfigurationManagerAttributes { Order = 1 } }));
     FreeThrowBonusEffect = BindLocal(config, SectionCombat, "Free throw bonus effect", true,
       new ConfigDescription(
-        "Local. When a free throw procs, play the vanilla craft bonus effect if available.",
+        "Local only.\n" +
+        "When a free throw procs, play the usual craft bonus effect if the game has it.",
         tags: new object[] { new ConfigurationManagerAttributes { Order = 0 } }));
-    BombSmokeGroundXp = BindSynced(config, SectionCombat, "BombSmoke ground XP", false,
+
+    const string heimdiverBlurb =
+      "HEIMDIVERS is a re-creation of Helldivers II within Valheim, built with vanilla assets using the Expand World Mods.\n" +
+      "Defend Valheim Super Earth against the ever present threat of the Terminids and the Automatons.\n" +
+      "Options in this section change how listed HD bombs work.\n" +
+      "Turn on only if you want that mode — fine on other worlds too if it fits your play.";
+    HeimdiverBombOverride = BindSynced(config, SectionHeimdiver, "Heimdiver Bomb Override", false,
       new ConfigDescription(
-        "Off = BombSmoke trains only when the flask hits a creature. On = also trains when the flask hits the ground — made for DhakhaR's Heimdiver server (Helldivers in Valheim). Check out their project. Server-synced.",
-        tags: new object[] { new ConfigurationManagerAttributes { Order = -1 } }));
+        heimdiverBlurb,
+        tags: new object[] { new ConfigurationManagerAttributes { Order = 10 } }));
+    const string dynamiteLandDistanceBlurb =
+      "How far BombDynamite travels when Heimdiver Bomb Override is on.\n" +
+      "1 matches the vanilla short throw. Raise it to send the bomb farther away.\n" +
+      "This number is a relative scale — it is not meters on the ground.\n" +
+      "Only BombDynamite uses this setting; other bombs stay unchanged.";
+    DynamiteLandDistance = BindSynced(config, SectionHeimdiver, "Dynamite land distance", 1f,
+      new ConfigDescription(
+        dynamiteLandDistanceBlurb,
+        DynamiteLandDistanceRange,
+        new ConfigurationManagerAttributes { Order = 9, ShowRangeAsPercent = false }));
 
     TempLaunchHelpStrength = BindLocal(config, SectionTemporary, "Launch help strength", 1f,
       new ConfigDescription(
-        "TEMPORARY — hand-edit any float (no cap). Multiplies ballistic launch aim (× Bombs steadiness). 0 = vanilla aim; 1 ≈ full gravity-aware aim at ≤10 m; try 1.5–3 if still low. Beyond 10 m help falls off. Local only.",
+        "TEMPORARY local feel tune — will be removed once the value is locked.\n" +
+        "Multiplies aim help toward the crosshair (also scaled by Bombs steadiness).\n" +
+        "0 = no aim help (vanilla aim).\n" +
+        "1 ≈ full help at close and mid range; try 1.5–3 if throws still land short.\n" +
+        "Hand-edit any float (no hard cap).\n" +
+        "Local only.",
         tags: new object[] { new ConfigurationManagerAttributes { Order = 1, ShowRangeAsPercent = false } }));
 
     // Bound last + section 10 so CM keeps Logging at the end; IsAdvanced hides it until Advanced is ticked.
@@ -148,7 +220,8 @@ internal static class Settings
     LogLoaded(FreeThrowBonusText);
     LogLoaded(FreeThrowText);
     LogLoaded(FreeThrowBonusEffect);
-    LogLoaded(BombSmokeGroundXp);
+    LogLoaded(HeimdiverBombOverride);
+    LogLoaded(DynamiteLandDistance);
     LogLoaded(TempLaunchHelpStrength);
     WarnInvertedEnds();
     ThrowSteadiness.OnAllowlistChanged();

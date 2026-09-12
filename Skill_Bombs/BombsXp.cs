@@ -39,6 +39,7 @@ internal static class BombsXp
     }
 
     _pending = new Pending { ThrowId = _nextThrowId++, ThrowerPlayerId = id, PrefabId = prefabId };
+    HeimdiverThrowXp.OnHdThrowBegun(_pending.Value.ThrowId, prefabId, player);
   }
 
   internal static void EndThrow()
@@ -59,6 +60,7 @@ internal static class BombsXp
   internal static void AfterProjectileSetup(Projectile projectile, Character owner)
   {
     AfterSetup(projectile.gameObject, owner);
+    HeimdiverBombs.TryStripSpawnOnHit(projectile);
   }
 
   internal static void AfterAoeSetup(Aoe aoe, Character owner)
@@ -123,39 +125,15 @@ internal static class BombsXp
     public bool IsValid => ThrowId != 0L && ThrowerPlayerId != 0L;
   }
 
-  internal static void TryCreditFromProjectile(Projectile projectile, Character? victim, Collider? collider)
+  internal static void TryCreditFromProjectile(Projectile projectile, Character? victim, Collider? _)
   {
+    if (victim == null)
+    {
+      return;
+    }
+
     ThrowRef mark = FirstValid(ReadMark(projectile.gameObject), ReadStamp(projectile.m_owner));
-    if (victim != null)
-    {
-      TryCredit(mark, victim);
-      return;
-    }
-
-    if (Settings.BombSmokeGroundXp == null || !Settings.BombSmokeGroundXp.Value)
-    {
-      return;
-    }
-
-    if (!IsBombSmokeMarked(projectile) || !IsGroundCollider(collider))
-    {
-      return;
-    }
-
-    TryCredit(mark, victim: null, allowNoVictim: true);
-  }
-
-  private static bool IsBombSmokeMarked(Projectile projectile)
-  {
-    BombsThrowMark? mark = projectile != null ? projectile.GetComponent<BombsThrowMark>() : null;
-    return mark != null
-      && mark.PrefabId != null
-      && mark.PrefabId.Equals("BombSmoke", System.StringComparison.Ordinal);
-  }
-
-  private static bool IsGroundCollider(Collider? collider)
-  {
-    return collider != null && collider.gameObject.GetComponent<Heightmap>() != null;
+    TryCredit(mark, victim);
   }
 
   internal static void TryCreditFromAoe(Aoe aoe, Character? victim)
@@ -264,21 +242,24 @@ internal static class BombsXp
     return a.IsValid ? a : b;
   }
 
-  private static void TryCredit(ThrowRef mark, Character? victim, bool allowNoVictim = false)
+  private static void TryCredit(ThrowRef mark, Character? victim)
   {
-    if (!BombsSkill.Ready || !mark.IsValid)
+    if (!BombsSkill.Ready || !mark.IsValid || victim == null)
     {
       return;
     }
 
-    if (victim == null)
+    if (HeimdiverThrowXp.SuppressHitXp(mark.ThrowId))
     {
-      if (!allowNoVictim)
+      if (SkillBombsPlugin.Allows(LogLevel.Debug))
       {
-        return;
+        SkillBombsPlugin.LogAt(LogLevel.Debug, $"Bombs XP suppressed (Heimdiver counter): throw {mark.ThrowId}.");
       }
+
+      return;
     }
-    else if (victim is Player victimPlayer && victimPlayer.GetPlayerID() == mark.ThrowerPlayerId)
+
+    if (victim is Player victimPlayer && victimPlayer.GetPlayerID() == mark.ThrowerPlayerId)
     {
       return;
     }
@@ -303,6 +284,11 @@ internal static class BombsXp
   {
     Player? local = Player.m_localPlayer;
     if (!BombsSkill.Ready || local == null || local.GetPlayerID() != throwerPlayerId)
+    {
+      return;
+    }
+
+    if (HeimdiverThrowXp.SuppressHitXp(throwId))
     {
       return;
     }
