@@ -1,61 +1,52 @@
 # Skill_Bombs
 
-BepInEx + Harmony mod: vanilla-tab **Bombs** skill — **throw steadiness** (spread + launch help), optional host **damage / stamina / free throw** (all default **off**).
+Adds a **Bombs** skill. Throws land closer to the crosshair as the skill rises. Optional damage, stamina, and free throw are off by default.
 
-## Identity
+Install on all clients and on the server (listen-host counts as the host). If the server has the mod, host config wins.
 
-| Layer | Value |
-|---|---|
-| Thunderstore | **Zeall/Skill_Bombs** |
-| Plugin title | **Skill_Bombs** |
-| Skills tab / `raiseskill` | **Bombs** |
-| BepInEx GUID | `skill_bombs` |
+## Features
+
+- Skills tab row **Bombs** (vanilla bomb icon).
+- Less random miss and slight aim help toward the crosshair as skill rises. Skill 0 matches vanilla throws.
+- XP once per throw when a creature is first hurt (vial, cloud, or thrown blob). Smoke cloud does not give cloud XP. Empty field and self-hit give none.
+- Optional host toggles: scale throw damage, cheaper throw stamina, chance to keep the bomb (free throw).
 
 ## How to use
 
-1. Install on **clients and the host/dedicated**. If the server has the mod, **host config wins** (listen-host counts). If the server does not have the mod, your local cfg applies.
-2. `dotnet build -c Release` writes `Skill_Bombs.dll` to `mods\Skill_Bombs\plugins\`. Copy that folder (or the DLL) into `Valheim\BepInEx\plugins\Skill_Bombs\` when you want to test (Gale: copy into that profile’s plugins).
-3. Open the vanilla **skills** tab: a **Bombs** row should appear (icon = vanilla **BombSmoke** item sprite).
-4. Throw listed bombs (`throw_bomb`). As **Bombs** rises: less random miss (**spread**), and initial aim pitches toward the **crosshair / camera ray** (**launch help** — gravity/speed stay vanilla). Skill **0** keeps vanilla launch.
-5. **XP:** first creature hurt this throw — vial, Aoe cloud (not smoke), or stamped blob / spit. Empty field and self-hit give 0.
-6. Optional combat (section `2. Damage and stamina`, host, **off** by default):
-   - **Scale throw damage** — staff-style flask grow (incl. blob 5 blunt face-hits); cloud floor-at-today up to ~2.5×; blob star chance. Lava/dynamite flask stay 0. Smoke cloud not grown.
-   - **Scale throw stamina** — up to 33% cheaper throw at skill max (same formula as vanilla weapon skills inside `GetAttackStamina`; Debug log shows `throw stamina X -> Y`). Bombs base cost is ~8, so the bar move is small.
-   - **Free throw** — chance to keep the bomb: `(chance at skill max) × skill factor` (default max **25%**). White DamageText uses host **Free throw text** (default `Freethrow!`); craft effect is local.
-7. Cheats: `raiseskill Bombs 50` / `resetskill Bombs` (console level print; no HUD toast).
+1. Install the plugin on every client and the host/dedicated.
+2. Open the skills tab — **Bombs** should appear.
+3. Throw listed bombs. Higher Bombs = steadier throws.
+4. Optional combat options are in config section `2. Damage and stamina` (all off until you turn them on).
+5. Console: `raiseskill Bombs 50` / `resetskill Bombs`.
 
-### Temporary launch tune
+Listed bombs use the normal bomb throw. Spears and staffs are ignored even if listed.
 
-Section **`9. Temporary launch tune`** → **`Launch help strength`** (local, uncapped). Dump after feel-good hardcode.
+If **ProjectileTweaks** is loaded, leave bomb spread at `1`. If **MaxAxe** is loaded, leave UseThrowingSkill off unless you want both.
 
-If **ProjectileTweaks** is loaded, leave bomb spread at `1`. If **MaxAxe** is loaded, leave UseThrowingSkill off unless you want both systems.
+## Configuration
+
+File: `BepInEx/config/skill_bombs.cfg`.
+
+General and combat math sync from the host when the server has the mod. Logging, free-throw text/effect toggles, and temporary launch tune stay local.
+
+- Throw steadiness at skill 0 / max: how steady untrained vs max skill throws are (0 = vanilla miss, 100 = no random miss + full aim help).
+- How steadiness improves: Linear, Quick start, or Slow start.
+- Bomb prefabs: comma-separated ids (exact case). Must use the bomb throw animation.
+- Scale throw damage: stronger flask hits and clouds; blob star chance. Lava/dynamite flask stay 0. Smoke cloud is not grown.
+- Scale throw stamina: up to 33% cheaper throws at skill max.
+- Free throw: chance to keep the bomb (`chance at skill max` × skill). Default max chance 25%.
+- Free throw text / bonus text / bonus effect: message and feedback when a free throw procs.
+- Launch help strength: temporary local feel tune (will be removed once locked).
+- Log levels: what the mod writes to the BepInEx log.
 
 ## Player commands
 
-None — config only.
+None.
 
 ## Admin commands
 
-None.
+None. Use vanilla `raiseskill` / `resetskill` with **Bombs**.
 
-## Config
+## Credits
 
-`BepInEx/config/skill_bombs.cfg`. Sections `1. General` and `2. Damage and stamina` (except local free-throw feedback) are host-enforced when the server has the mod. `3. Logging`, free-throw bonus text/effect, and `9. Temporary launch tune` stay local.
-
-| Key | Default | Meaning |
-|---|---|---|
-| `Throw steadiness at skill 0` | 0 | Vanilla spread + launch when untrained |
-| `Throw steadiness at skill max` | 100 | No spread + full launch help (× temp strength) |
-| `How steadiness improves` | Linear | Linear / Quick start / Slow start |
-| `Bomb prefabs` | listed bombs | Exact case; must use `throw_bomb` |
-| `Scale throw damage` | off | Flask + clouds + blob stars |
-| `Scale throw stamina` | off | −33% throw cost at skill max |
-| `Free throw` | off | Chance not to consume |
-| `Free throw chance at skill max` | 25 | Percent at skill ceiling |
-| `Free throw bonus text` | on | Local; show DamageText on proc |
-| `Free throw text` | Freethrow! | Host; white Normal DamageText string |
-| `Free throw bonus effect` | on | Local; craft bonus VFX on proc |
-| `Launch help strength` | 1 | TEMPORARY uncapped loft multiplier |
-| `Log levels` | Fatal…Info | Check Debug here + BepInEx for traces |
-
-Thunderstore author when published: **Zeall**.
+Sources: [GitHub](https://github.com/z-eall/valheim-skill_bombs)
