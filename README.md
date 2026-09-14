@@ -32,8 +32,11 @@ Listed bombs use the normal bomb throw. Spears and staffs are ignored even if li
 
 Optional host section for DhakhaR's **HEIMDIVERS** (Helldivers II in Valheim with Expand World Mods). [Intro video](https://youtu.be/yoscS1CJWTE?si=gIVeFDL8KCgtH9w5) · [Heimdiver Discord](https://discord.gg/JCeymsZvE7)
 
-- **Heimdiver Bomb Override** (off by default): Heimdiver rules for a fixed HD set (`BombSmoke`, `BombBlob_Lava`, `BombBlob_Frost`, `BombBlob_Poison`, `BombLava`, `BombDynamite`). Smoke and the three HD blobs keep vial blunt but no longer spawn their cloud / blob on hit. HD throws train Bombs from a shared throw counter (about every 1–5 throws) instead of hits. Leave off for normal Skill_Bombs play. Fine on other worlds if it fits your play.
-- **Dynamite land distance**: how far **BombDynamite** travels when the master override is on. `1` matches the vanilla short throw; raise it to send the bomb farther. Relative scale — not meters. Only BombDynamite.
+In Configuration Manager the HEIMDIVERS briefing shows as on-page text (not only a tooltip).
+
+- **Heimdiver Explosive Augmentation** (off by default): master switch — built-in Augmentation plus the options below for Heimdiver bombs. Off removes that Augmentation (normal Skill_Bombs). Built-in includes throw-counter XP, smoke/blob strip, Dynamite without launch help, and English Helldivers-style names for the confirmed set (Poison / PoisonElite pending).
+- **Dynamite Trajectory Calibration**: how far **BombDynamite** travels under Augmentation. `1` = vanilla short throw; raise to send it farther. Relative scale — not meters. Ignored when Augmentation is off.
+- **Beacon Deployment Efficiency**: how much throw stamina **BombSmoke** saves under Augmentation (`0` = full cost, `100` = free). Default `100`. Ignored when Augmentation is off.
 
 ## Mod compatibility
 
@@ -51,7 +54,7 @@ Server-synced keys follow the host when the server has the mod. Free-throw feedb
 - Bomb prefabs: which items use Bombs (comma-separated ids, exact case; must use the bomb throw).
 - Scale throw damage / stamina / free throw: optional combat toggles (off until you turn them on).
 - Free throw chance / text / bonus text / bonus effect: free-throw odds and feedback.
-- Heimdiver Bomb Override / Dynamite land distance: see **Heimdiver Science** above.
+- Heimdiver Science keys: see **Heimdiver Science** above.
 - Launch help strength: temporary local feel tune (will be removed once locked).
 
 ## Console commands

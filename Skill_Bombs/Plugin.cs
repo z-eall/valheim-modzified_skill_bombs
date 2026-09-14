@@ -10,7 +10,7 @@ namespace Skill_Bombs;
 public class SkillBombsPlugin : BaseUnityPlugin
 {
   internal const string ModName = "Skill_Bombs";
-  internal const string ModVersion = "0.2.8";
+  internal const string ModVersion = "0.2.10";
   /// <summary>Jere-style snake_case GUID. Thunderstore author when published: Zeall.</summary>
   internal const string ModGUID = "skill_bombs";
 

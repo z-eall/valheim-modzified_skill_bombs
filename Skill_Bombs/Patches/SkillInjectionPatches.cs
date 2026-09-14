@@ -129,6 +129,7 @@ internal static class Localization_SetupLanguage_Bombs_Patch
     if (__result)
     {
       BombsSkill.RegisterTokens();
+      HeimdiverItemDisplay.Refresh();
     }
   }
 }

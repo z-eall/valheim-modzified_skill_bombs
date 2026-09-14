@@ -7,15 +7,38 @@ namespace Skill_Bombs;
 /// Vanilla attack cost discount lives in <see cref="Attack"/> getters:
 /// <c>cost -= cost * 0.33f * GetSkillFactor(item.skillType)</c>.
 /// Bombs items stay <c>None</c> (factor 0); when the toggle is on we apply the same line with Bombs.
+/// Under Heimdiver Explosive Augmentation, BombSmoke also uses Beacon Deployment Efficiency.
 /// </summary>
 internal static class CombatCostUtil
 {
   internal static void ApplyBombsCostDiscount(Attack attack, ref float cost)
   {
-    if (cost <= 0f
-        || Settings.ScaleThrowStamina == null
-        || !Settings.ScaleThrowStamina.Value
-        || !ThrowSteadiness.IsLocalArmedBomb(attack))
+    if (cost <= 0f || !ThrowSteadiness.IsLocalArmedBomb(attack))
+    {
+      return;
+    }
+
+    string? prefabId = ThrowSteadiness.WeaponPrefabId(attack.m_weapon);
+    if (HeimdiverBombs.OverrideActive
+        && string.Equals(prefabId, "BombSmoke", System.StringComparison.Ordinal)
+        && Settings.BeaconDeploymentEfficiency != null)
+    {
+      float reduce = Mathf.Clamp(Settings.BeaconDeploymentEfficiency.Value, 0, 100) / 100f;
+      float beforeBeacon = cost;
+      cost *= 1f - reduce;
+      if (SkillBombsPlugin.Allows(LogLevel.Debug))
+      {
+        SkillBombsPlugin.LogAt(LogLevel.Debug,
+          $"Beacon stamina BombSmoke {beforeBeacon:0.##} -> {cost:0.##} (−{reduce * 100f:0.#}%).");
+      }
+
+      if (cost <= 0f)
+      {
+        return;
+      }
+    }
+
+    if (Settings.ScaleThrowStamina == null || !Settings.ScaleThrowStamina.Value)
     {
       return;
     }
@@ -33,7 +56,6 @@ internal static class CombatCostUtil
     }
 
     float before = cost;
-    // Same identity as Attack.GetAttackStamina: cost -= cost * 0.33f * skillFactor
     cost -= cost * 0.33f * t;
     if (SkillBombsPlugin.Allows(LogLevel.Debug))
     {

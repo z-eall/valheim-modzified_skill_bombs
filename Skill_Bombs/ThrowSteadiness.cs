@@ -200,6 +200,12 @@ internal static class ThrowSteadiness
       return false;
     }
 
+    if (HeimdiverBombs.OverrideActive
+        && string.Equals(WeaponPrefabId(attack.m_weapon), "BombDynamite", StringComparison.Ordinal))
+    {
+      return false;
+    }
+
     float strength = Settings.TempLaunchHelpStrength?.Value ?? 1f;
     if (strength <= 0f)
     {

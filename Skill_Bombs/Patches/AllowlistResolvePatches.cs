@@ -18,6 +18,7 @@ internal static class ZNetScene_Awake_Allowlist_Patch
 
     ThrowSteadiness.TryResolvePrefabs();
     BombsSkill.TryResolveIcon();
+    HeimdiverItemDisplay.Refresh();
   }
 }
 
@@ -28,6 +29,7 @@ internal static class Game_Start_Allowlist_Patch
   {
     ThrowSteadiness.TryResolvePrefabs();
     BombsSkill.TryResolveIcon();
+    HeimdiverItemDisplay.Refresh();
   }
 }
 
@@ -43,6 +45,7 @@ internal static class ObjectDB_CopyOtherDB_Icon_Patch
     }
 
     BombsSkill.TryResolveIcon();
+    HeimdiverItemDisplay.Refresh();
   }
 }
 
@@ -52,5 +55,6 @@ internal static class ZNet_OnDestroy_Allowlist_Patch
   private static void Prefix()
   {
     ThrowSteadiness.OnWorldUnload();
+    HeimdiverItemDisplay.OnWorldUnload();
   }
 }

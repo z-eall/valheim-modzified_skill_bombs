@@ -1,6 +1,8 @@
+using System;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using ServerSync;
+using UnityEngine;
 
 namespace Skill_Bombs;
 
@@ -68,16 +70,26 @@ internal static class Settings
   internal static ConfigEntry<bool> FreeThrowBonusText { get; private set; } = null!;
   internal static ConfigEntry<string> FreeThrowText { get; private set; } = null!;
   internal static ConfigEntry<bool> FreeThrowBonusEffect { get; private set; } = null!;
-  /// <summary>Host. Master gate for hardcoded HD bombs (strip / throw-counter / Dynamite land).</summary>
+  /// <summary>Host. Master gate for hardcoded HD bombs (strip / throw-counter / Dynamite / Beacon).</summary>
   internal static ConfigEntry<bool> HeimdiverBombOverride { get; private set; } = null!;
-  /// <summary>Host. Relative how-far for BombDynamite under override (1 = vanilla). Not meters; maps to throw speed in code.</summary>
+  /// <summary>Host. Relative how-far for BombDynamite under override (1 = vanilla). Not meters.</summary>
   internal static ConfigEntry<float> DynamiteLandDistance { get; private set; } = null!;
+  /// <summary>Host. BombSmoke throw stamina reduction % under override (100 = free).</summary>
+  internal static ConfigEntry<int> BeaconDeploymentEfficiency { get; private set; } = null!;
+  /// <summary>Local. CM-only briefing row (CustomDrawer); not a real setting.</summary>
+  internal static ConfigEntry<bool> HeimdiverBriefing { get; private set; } = null!;
 
   /// <summary>Vanilla BombDynamite <c>Attack.m_projectileVel</c> — land distance 1 maps here.</summary>
   internal const float VanillaDynamiteProjectileVel = 2f;
 
   /// <summary>CM slider span for <see cref="DynamiteLandDistance"/> (relative scale, not meters).</summary>
   internal static readonly AcceptableValueRange<float> DynamiteLandDistanceRange = new(0.25f, 50f);
+
+  internal const string HeimdiverBriefingText =
+    "HEIMDIVERS is a re-creation of Helldivers II within Valheim, built with vanilla assets using the Expand World Mods.\n" +
+    "Defend Valheim Super Earth against the ever-present threat of the Terminids and the Automatons.\n\n" +
+    "This section adds Heimdiver Augmentation for Heimdiver bombs.\n" +
+    "Use the master toggle below — leave off for normal Skill_Bombs; fine on other worlds if it fits.";
 
   internal static void Init(ConfigFile config)
   {
@@ -164,25 +176,42 @@ internal static class Settings
         "When a free throw procs, play the usual craft bonus effect if the game has it.",
         tags: new object[] { new ConfigurationManagerAttributes { Order = 0 } }));
 
-    const string heimdiverBlurb =
-      "HEIMDIVERS is a re-creation of Helldivers II within Valheim, built with vanilla assets using the Expand World Mods.\n" +
-      "Defend Valheim Super Earth against the ever present threat of the Terminids and the Automatons.\n" +
-      "Options in this section change how listed HD bombs work.\n" +
-      "Turn on only if you want that mode — fine on other worlds too if it fits your play.";
-    HeimdiverBombOverride = BindSynced(config, SectionHeimdiver, "Heimdiver Bomb Override", false,
+    HeimdiverBriefing = BindLocal(config, SectionHeimdiver, "Heimdiver Science briefing", false,
       new ConfigDescription(
-        heimdiverBlurb,
+        HeimdiverBriefingText,
+        tags: new object[]
+        {
+          new ConfigurationManagerAttributes
+          {
+            Order = 12,
+            HideDefaultButton = true,
+            HideSettingName = true,
+            CustomDrawer = DrawHeimdiverBriefing
+          }
+        }));
+    HeimdiverBombOverride = BindSynced(config, SectionHeimdiver, "Heimdiver Explosive Augmentation", false,
+      new ConfigDescription(
+        "Master switch for Heimdiver bomb rules.\n" +
+        "When on, built-in Augmentation and the options below apply to Heimdiver bombs.\n" +
+        "When off, that Augmentation is removed — normal Skill_Bombs.\n" +
+        "Server-synced.",
         tags: new object[] { new ConfigurationManagerAttributes { Order = 10 } }));
-    const string dynamiteLandDistanceBlurb =
-      "How far BombDynamite travels when Heimdiver Bomb Override is on.\n" +
-      "1 matches the vanilla short throw. Raise it to send the bomb farther away.\n" +
-      "This number is a relative scale — it is not meters on the ground.\n" +
-      "Only BombDynamite uses this setting; other bombs stay unchanged.";
-    DynamiteLandDistance = BindSynced(config, SectionHeimdiver, "Dynamite land distance", 1f,
+    DynamiteLandDistance = BindSynced(config, SectionHeimdiver, "Dynamite Trajectory Calibration", 1f,
       new ConfigDescription(
-        dynamiteLandDistanceBlurb,
+        "How far BombDynamite travels under Augmentation.\n" +
+        "1 matches the vanilla short throw. Raise it to send the bomb farther away.\n" +
+        "Relative scale — not meters on the ground.\n" +
+        "Only BombDynamite. Ignored when Augmentation is off.",
         DynamiteLandDistanceRange,
         new ConfigurationManagerAttributes { Order = 9, ShowRangeAsPercent = false }));
+    BeaconDeploymentEfficiency = BindSynced(config, SectionHeimdiver, "Beacon Deployment Efficiency", 100,
+      new ConfigDescription(
+        "How much throw stamina BombSmoke saves under Augmentation.\n" +
+        "0 = full cost. 100 = free.\n" +
+        "Only BombSmoke. Ignored when Augmentation is off.\n" +
+        "Server-synced.",
+        new AcceptableValueRange<int>(0, 100),
+        new ConfigurationManagerAttributes { Order = 8, ShowRangeAsPercent = false }));
 
     TempLaunchHelpStrength = BindLocal(config, SectionTemporary, "Launch help strength", 1f,
       new ConfigDescription(
@@ -205,6 +234,8 @@ internal static class Settings
     BombPrefabs.SettingChanged += (_, _) => ThrowSteadiness.OnAllowlistChanged();
     HowSteadinessImproves.SettingChanged += (_, _) => ThrowSteadiness.OnCurveChanged();
 
+    HeimdiverBombOverride.SettingChanged += (_, _) => HeimdiverItemDisplay.Refresh();
+
     config.SettingChanged += OnSettingChanged;
     config.ConfigReloaded += (_, _) => SkillBombsPlugin.LogAt(LogLevel.Info, "Config reloaded.");
 
@@ -222,9 +253,17 @@ internal static class Settings
     LogLoaded(FreeThrowBonusEffect);
     LogLoaded(HeimdiverBombOverride);
     LogLoaded(DynamiteLandDistance);
+    LogLoaded(BeaconDeploymentEfficiency);
     LogLoaded(TempLaunchHelpStrength);
     WarnInvertedEnds();
     ThrowSteadiness.OnAllowlistChanged();
+  }
+
+  private static void DrawHeimdiverBriefing(ConfigEntryBase _)
+  {
+    GUILayout.BeginVertical(GUI.skin.box);
+    GUILayout.Label(HeimdiverBriefingText, new GUIStyle(GUI.skin.label) { wordWrap = true });
+    GUILayout.EndVertical();
   }
 
   private static void OnSettingChanged(object sender, SettingChangedEventArgs args)
@@ -267,10 +306,13 @@ internal static class Settings
   }
 }
 
-/// <summary>Dummy type Configuration Manager looks for on <see cref="ConfigDescription.Tags"/>.</summary>
+/// <summary>Type Configuration Manager looks for on <see cref="ConfigDescription.Tags"/> (reflection).</summary>
 internal sealed class ConfigurationManagerAttributes
 {
   public int? Order;
   public bool? ShowRangeAsPercent;
   public bool? IsAdvanced;
+  public bool? HideDefaultButton;
+  public bool? HideSettingName;
+  public Action<ConfigEntryBase>? CustomDrawer;
 }

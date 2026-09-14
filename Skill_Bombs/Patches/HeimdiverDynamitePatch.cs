@@ -5,8 +5,8 @@ using UnityEngine;
 namespace Skill_Bombs.Patches;
 
 /// <summary>
-/// Under Heimdiver Bomb Override, map player-facing <see cref="Settings.DynamiteLandDistance"/>
-/// to live <c>Attack.m_projectileVel</c> for BombDynamite only.
+/// Under Heimdiver Explosive Augmentation, map player-facing Dynamite Trajectory Calibration
+/// (<see cref="Settings.DynamiteLandDistance"/>) to live <c>Attack.m_projectileVel</c> for BombDynamite only.
 /// </summary>
 [HarmonyPatch(typeof(Attack), "FireProjectileBurst")]
 internal static class Attack_FireProjectileBurst_HeimdiverDynamite_Patch
@@ -35,7 +35,7 @@ internal static class Attack_FireProjectileBurst_HeimdiverDynamite_Patch
     if (SkillBombsPlugin.Allows(LogLevel.Debug))
     {
       SkillBombsPlugin.LogAt(LogLevel.Debug,
-        $"Heimdiver Dynamite land distance {distance:0.###} → vel {vel:0.###} (was {__state.Value:0.###}).");
+        $"Heimdiver Dynamite Trajectory Calibration {distance:0.###} → vel {vel:0.###} (was {__state.Value:0.###}).");
     }
   }
 
