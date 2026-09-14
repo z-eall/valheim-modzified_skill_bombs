@@ -12,7 +12,7 @@ internal static class HeimdiverBombs
     "BombSmoke",
     "BombBlob_Lava",
     "BombBlob_Frost",
-    "BombBlob_Poison",
+    "BombBlob_PoisonElite",
     "BombLava",
     "BombDynamite"
   };
@@ -23,7 +23,7 @@ internal static class HeimdiverBombs
     "BombSmoke",
     "BombBlob_Lava",
     "BombBlob_Frost",
-    "BombBlob_Poison"
+    "BombBlob_PoisonElite"
   };
 
   internal static bool OverrideActive =>

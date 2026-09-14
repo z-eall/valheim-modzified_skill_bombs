@@ -272,6 +272,11 @@ internal static class BombsXp
     Player? local = Player.m_localPlayer;
     if (local != null && local.GetPlayerID() == mark.ThrowerPlayerId)
     {
+      if (IsXpBlocked(local, mark.ThrowId))
+      {
+        return;
+      }
+
       local.RaiseSkill(BombsSkill.Type, BombsSkill.Def.m_increseStep);
       TraceCredit(mark.ThrowId, victim, local);
       return;
@@ -298,8 +303,29 @@ internal static class BombsXp
       return;
     }
 
+    if (IsXpBlocked(local, throwId))
+    {
+      return;
+    }
+
     local.RaiseSkill(BombsSkill.Type, BombsSkill.Def.m_increseStep);
     TraceCredit(throwId, null, local);
+  }
+
+  private static bool IsXpBlocked(Player thrower, long throwId)
+  {
+    if (!XpBlocklistMatcher.IsDenied(thrower, out string ruleName))
+    {
+      return false;
+    }
+
+    if (SkillBombsPlugin.Allows(LogLevel.Debug))
+    {
+      SkillBombsPlugin.LogAt(LogLevel.Debug,
+        $"Bombs XP blocked by rule '{ruleName}' (throw {throwId}).");
+    }
+
+    return true;
   }
 
   private static void TraceCredit(long throwId, Character? victim, Player local)

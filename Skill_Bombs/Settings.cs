@@ -11,10 +11,9 @@ internal static class Settings
   internal const string SectionGeneral = "1. General";
   internal const string SectionCombat = "2. Damage and stamina";
   internal const string SectionHeimdiver = "3. Heimdiver Science";
-  /// <summary>Temporary feel-tune only — remove after [Lock feel-good launch help] hardcodes the constant.</summary>
-  internal const string SectionTemporary = "9. Temporary launch tune";
+  internal const string SectionXpBlocklist = "4. XP Gain Blocklist";
   /// <summary>Last numbered section; Log levels is advanced-only so the block stays out of the default CM view.</summary>
-  internal const string SectionLogging = "10. Logging";
+  internal const string SectionLogging = "9. Logging";
   internal const string DefaultPrefabList =
     "BombOoze, BombBile, BombSmoke, BombLava, BombDynamite, BombBlob_Poison, BombBlob_PoisonElite, BombBlob_Frost, BombBlob_Tar, BombBlob_Lava, BombBlob_Morkhalla";
 
@@ -46,6 +45,12 @@ internal static class Settings
   /// <summary>Soft cap on applied launch-angle delta (degrees) after help × range factors.</summary>
   internal const float LaunchHelpMaxAbsDegrees = 15f;
 
+  /// <summary>
+  /// Locked launch-help strength (was temporary CM "Launch help strength").
+  /// Feel-good = 1.0 after close-range guard (bombTest9 / map ticket 12).
+  /// </summary>
+  internal const float LaunchHelpStrength = 1f;
+
   /// <summary>Default vial gravity when the projectile prefab has no readable <c>m_gravity</c>.</summary>
   internal const float DefaultBombGravity = 10f;
 
@@ -60,8 +65,6 @@ internal static class Settings
   internal static ConfigEntry<int> SteadinessAtSkillMax { get; private set; } = null!;
   internal static ConfigEntry<string> HowSteadinessImproves { get; private set; } = null!;
   internal static ConfigEntry<string> BombPrefabs { get; private set; } = null!;
-  /// <summary>Local-only temporary multiplier; change live (Configuration Manager / cfg reload). Dump after feel-good.</summary>
-  internal static ConfigEntry<float> TempLaunchHelpStrength { get; private set; } = null!;
 
   internal static ConfigEntry<bool> ScaleThrowDamage { get; private set; } = null!;
   internal static ConfigEntry<bool> ScaleThrowStamina { get; private set; } = null!;
@@ -78,6 +81,8 @@ internal static class Settings
   internal static ConfigEntry<int> BeaconDeploymentEfficiency { get; private set; } = null!;
   /// <summary>Local. CM-only briefing row (CustomDrawer); not a real setting.</summary>
   internal static ConfigEntry<bool> HeimdiverBriefing { get; private set; } = null!;
+  /// <summary>Local. CM-only status row for the YAML blocklist file (CustomDrawer).</summary>
+  internal static ConfigEntry<bool> XpBlocklistStatus { get; private set; } = null!;
 
   /// <summary>Vanilla BombDynamite <c>Attack.m_projectileVel</c> — land distance 1 maps here.</summary>
   internal const float VanillaDynamiteProjectileVel = 2f;
@@ -213,17 +218,25 @@ internal static class Settings
         new AcceptableValueRange<int>(0, 100),
         new ConfigurationManagerAttributes { Order = 8, ShowRangeAsPercent = false }));
 
-    TempLaunchHelpStrength = BindLocal(config, SectionTemporary, "Launch help strength", 1f,
+    XpBlocklistStatus = BindLocal(config, SectionXpBlocklist, "XP Gain Blocklist file", false,
       new ConfigDescription(
-        "TEMPORARY local feel tune — will be removed once the value is locked.\n" +
-        "Multiplies aim help toward the crosshair (also scaled by Bombs steadiness).\n" +
-        "0 = no aim help (vanilla aim).\n" +
-        "1 ≈ full help at close and mid range; try 1.5–3 if throws still land short.\n" +
-        "Hand-edit any float (no hard cap).\n" +
-        "Local only.",
-        tags: new object[] { new ConfigurationManagerAttributes { Order = 1, ShowRangeAsPercent = false } }));
+        "Host file for rules that stop Bombs XP. Edit the YAML on disk — not this cfg.\n" +
+        "File: BepInEx/config/skill_bombs/skill_bombs_xp_blocklist.yaml\n" +
+        "Empty or comments only = no XP blocked. Server-synced.",
+        tags: new object[]
+        {
+          new ConfigurationManagerAttributes
+          {
+            Order = 1,
+            HideDefaultButton = true,
+            HideSettingName = true,
+            CustomDrawer = DrawXpBlocklistStatus
+          }
+        }));
 
-    // Bound last + section 10 so CM keeps Logging at the end; IsAdvanced hides it until Advanced is ticked.
+    XpBlocklistStore.Init(Sync);
+
+    // Bound last so CM keeps Logging at the end; IsAdvanced hides it until Advanced is ticked.
     LogLevels = BindLocal(config, SectionLogging, "Log levels", DefaultLogLevels,
       new ConfigDescription(
         "Same flags as BepInEx Logging.Disk / Logging.Console. Throw and XP traces are Debug; they only reach LogOutput.log when Debug is checked here and in BepInEx.cfg.",
@@ -254,7 +267,6 @@ internal static class Settings
     LogLoaded(HeimdiverBombOverride);
     LogLoaded(DynamiteLandDistance);
     LogLoaded(BeaconDeploymentEfficiency);
-    LogLoaded(TempLaunchHelpStrength);
     WarnInvertedEnds();
     ThrowSteadiness.OnAllowlistChanged();
   }
@@ -263,6 +275,17 @@ internal static class Settings
   {
     GUILayout.BeginVertical(GUI.skin.box);
     GUILayout.Label(HeimdiverBriefingText, new GUIStyle(GUI.skin.label) { wordWrap = true });
+    GUILayout.EndVertical();
+  }
+
+  private static void DrawXpBlocklistStatus(ConfigEntryBase _)
+  {
+    GUILayout.BeginVertical(GUI.skin.box);
+    GUILayout.Label(
+      "Rules that stop Bombs XP live in a file on the host (not this cfg).\n" +
+      "File: BepInEx/config/skill_bombs/skill_bombs_xp_blocklist.yaml\n" +
+      "Leave the file empty (or comments only) = no XP blocked. Server-synced.",
+      new GUIStyle(GUI.skin.label) { wordWrap = true });
     GUILayout.EndVertical();
   }
 

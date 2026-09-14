@@ -19,6 +19,19 @@ internal static class HeimdiverThrowXp
       return;
     }
 
+    if (XpBlocklistMatcher.IsDenied(player, out string ruleName))
+    {
+      // Still suppress hit XP for this HD throw; do not increment counter or RaiseSkill.
+      CounterModeThrowIds.Add(throwId);
+      if (SkillBombsPlugin.Allows(LogLevel.Debug))
+      {
+        SkillBombsPlugin.LogAt(LogLevel.Debug,
+          $"Heimdiver throw XP blocked by rule '{ruleName}' (throw {throwId}, {prefabId}).");
+      }
+
+      return;
+    }
+
     CounterModeThrowIds.Add(throwId);
     if (_threshold < 1)
     {

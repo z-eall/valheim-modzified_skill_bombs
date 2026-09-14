@@ -206,7 +206,7 @@ internal static class ThrowSteadiness
       return false;
     }
 
-    float strength = Settings.TempLaunchHelpStrength?.Value ?? 1f;
+    float strength = Settings.LaunchHelpStrength;
     if (strength <= 0f)
     {
       return false;
@@ -372,7 +372,7 @@ internal static class ThrowSteadiness
     }
 
     string id = WeaponPrefabId(attack.m_weapon) ?? "?";
-    float strength = Settings.TempLaunchHelpStrength?.Value ?? 1f;
+    float strength = Settings.LaunchHelpStrength;
     int pct = Mathf.RoundToInt(CurrentSteadiness() * 100f);
     SkillBombsPlugin.LogAt(LogLevel.Debug,
       $"launch help {id}: steadiness {pct}%, strength {strength:0.###}, hand +{handLift:0.###}m, launchAngle Δ {loft:0.###}°");

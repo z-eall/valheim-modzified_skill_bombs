@@ -38,7 +38,10 @@ internal static class HeimdiverItemDisplay
         "Creates a far-reaching incendiary blast against the enemies of Freedom"),
       ["BombSmoke"] = (
         "G-1 Stratagem Beacon",
-        "An advanced transponder and targeting module allowing accurate delivery of ordinance and equipment")
+        "An advanced transponder and targeting module allowing accurate delivery of ordinance and equipment"),
+      ["BombBlob_PoisonElite"] = (
+        "G-4 Gas Grenade",
+        "Releases a cloud of caustic gas that damages and softens targets")
     };
 
   private static readonly Dictionary<string, Snapshot> Originals = new(StringComparer.Ordinal);
