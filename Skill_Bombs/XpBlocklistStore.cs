@@ -241,7 +241,7 @@ internal static class XpBlocklistStore
 
   private const string StubTutorial =
     "# Skill_Bombs — XP Gain Blocklist\n" +
-    "# Field list: README → XP Gain Blocklist (https://github.com/z-eall/valheim-skill_bombs)\n" +
+    "# Field list: docs/xp_gain_blocklist.md (https://github.com/z-eall/valheim-skill_bombs/blob/main/docs/xp_gain_blocklist.md)\n" +
     "#\n" +
     "# How matching works:\n" +
     "# - List of rules. Each needs a unique name. (Empty / comments only = nothing blocked.)\n" +
