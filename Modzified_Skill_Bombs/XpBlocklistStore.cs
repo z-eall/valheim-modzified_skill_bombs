@@ -8,14 +8,14 @@ using ServerSync;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
-namespace Skill_Bombs;
+namespace Modzified_Skill_Bombs;
 
 /// <summary>
 /// Host file → CustomSyncedValue&lt;string&gt; → compile. Clients parse synced text only.
 /// </summary>
 internal static class XpBlocklistStore
 {
-  internal const string RelativePath = "skill_bombs/skill_bombs_xp_blocklist.yaml";
+  internal const string RelativePath = "modzified_skill/bombs/modzified_skill_bombs_xp_blocklist.yaml";
   private const string SyncId = "XpGainBlocklistYaml";
 
   private static CustomSyncedValue<string> _synced = null!;
@@ -240,8 +240,8 @@ internal static class XpBlocklistStore
   }
 
   private const string StubTutorial =
-    "# Skill_Bombs — XP Gain Blocklist\n" +
-    "# Field list: docs/xp_gain_blocklist.md (https://github.com/z-eall/valheim-skill_bombs/blob/main/docs/xp_gain_blocklist.md)\n" +
+    "# Modzified_Skill_Bombs — XP Gain Blocklist\n" +
+    "# Field list: docs/xp_gain_blocklist.md (https://github.com/z-eall/valheim-modzified_skill_bombs/blob/main/docs/xp_gain_blocklist.md)\n" +
     "#\n" +
     "# How matching works:\n" +
     "# - List of rules. Each needs a unique name. (Empty / comments only = nothing blocked.)\n" +

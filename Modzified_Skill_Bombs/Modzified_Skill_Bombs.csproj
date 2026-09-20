@@ -6,8 +6,8 @@
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <AssemblyName>Skill_Bombs</AssemblyName>
-    <RootNamespace>Skill_Bombs</RootNamespace>
+    <AssemblyName>Modzified_Skill_Bombs</AssemblyName>
+    <RootNamespace>Modzified_Skill_Bombs</RootNamespace>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
   </PropertyGroup>
 

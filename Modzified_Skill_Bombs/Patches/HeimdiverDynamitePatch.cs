@@ -2,7 +2,7 @@ using BepInEx.Logging;
 using HarmonyLib;
 using UnityEngine;
 
-namespace Skill_Bombs.Patches;
+namespace Modzified_Skill_Bombs.Patches;
 
 /// <summary>
 /// Under Heimdiver Explosive Augmentation, map player-facing Dynamite Trajectory Calibration

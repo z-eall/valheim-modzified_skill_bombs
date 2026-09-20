@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using BepInEx.Bootstrap;
 
-namespace Skill_Bombs;
+namespace Modzified_Skill_Bombs;
 
 internal static class Coexistence
 {

@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 
-namespace Skill_Bombs;
+namespace Modzified_Skill_Bombs;
 
 #pragma warning disable CS0649 // YamlDotNet sets public fields via reflection.
 

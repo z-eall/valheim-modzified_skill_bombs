@@ -1,7 +1,7 @@
 using System.Reflection;
 using HarmonyLib;
 
-namespace Skill_Bombs.Patches;
+namespace Modzified_Skill_Bombs.Patches;
 
 [HarmonyPatch(typeof(Attack), "FireProjectileBurst")]
 internal static class Attack_FireProjectileBurst_CombatDamage_Patch

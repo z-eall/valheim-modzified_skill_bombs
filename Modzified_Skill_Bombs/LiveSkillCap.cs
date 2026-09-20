@@ -1,7 +1,7 @@
 using System;
 using System.Reflection;
 
-namespace Skill_Bombs;
+namespace Modzified_Skill_Bombs;
 
 /// <summary>Soft-read SkillLimitExtender <c>GetCap(Bombs)</c>. Missing or ≤ 0 → 100. Do not use GetSkillFactor.</summary>
 internal static class LiveSkillCap

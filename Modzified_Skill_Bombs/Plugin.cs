@@ -4,15 +4,15 @@ using BepInEx.Logging;
 using HarmonyLib;
 using UnityEngine.Rendering;
 
-namespace Skill_Bombs;
+namespace Modzified_Skill_Bombs;
 
 [BepInPlugin(ModGUID, ModName, ModVersion)]
 public class SkillBombsPlugin : BaseUnityPlugin
 {
-  internal const string ModName = "Skill_Bombs";
-  internal const string ModVersion = "0.2.14";
+  internal const string ModName = "Modzified_Skill_Bombs";
+  internal const string ModVersion = "0.3.0";
   /// <summary>Jere-style snake_case GUID. Thunderstore author when published: Zeall.</summary>
-  internal const string ModGUID = "skill_bombs";
+  internal const string ModGUID = "modzified_skill_bombs";
 
   internal static SkillBombsPlugin Instance { get; private set; } = null!;
   internal static ManualLogSource Log { get; private set; } = null!;

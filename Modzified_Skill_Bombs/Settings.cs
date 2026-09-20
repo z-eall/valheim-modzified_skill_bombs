@@ -4,7 +4,7 @@ using BepInEx.Logging;
 using ServerSync;
 using UnityEngine;
 
-namespace Skill_Bombs;
+namespace Modzified_Skill_Bombs;
 
 internal static class Settings
 {
@@ -94,7 +94,7 @@ internal static class Settings
     "HEIMDIVERS is a re-creation of Helldivers II within Valheim, built with vanilla assets using the Expand World Mods.\n" +
     "Defend Valheim Super Earth against the ever-present threat of the Terminids and the Automatons.\n\n" +
     "This section adds Heimdiver Augmentation for Heimdiver bombs.\n" +
-    "Use the master toggle below — leave off for normal Skill_Bombs; fine on other worlds if it fits.";
+    "Use the master toggle below — leave off for normal Modzified_Skill_Bombs; fine on other worlds if it fits.";
 
   internal static void Init(ConfigFile config)
   {
@@ -198,7 +198,7 @@ internal static class Settings
       new ConfigDescription(
         "Master switch for Heimdiver bomb rules.\n" +
         "When on, built-in Augmentation and the options below apply to Heimdiver bombs.\n" +
-        "When off, that Augmentation is removed — normal Skill_Bombs.\n" +
+        "When off, that Augmentation is removed — normal Modzified_Skill_Bombs.\n" +
         "Server-synced.",
         tags: new object[] { new ConfigurationManagerAttributes { Order = 10 } }));
     DynamiteLandDistance = BindSynced(config, SectionHeimdiver, "Dynamite Trajectory Calibration", 1f,
@@ -221,7 +221,7 @@ internal static class Settings
     XpBlocklistStatus = BindLocal(config, SectionXpBlocklist, "XP Gain Blocklist file", false,
       new ConfigDescription(
         "Host file for rules that stop Bombs XP. Edit the YAML on disk — not this cfg.\n" +
-        "File: BepInEx/config/skill_bombs/skill_bombs_xp_blocklist.yaml\n" +
+        "File: BepInEx/config/modzified_skill/bombs/modzified_skill_bombs_xp_blocklist.yaml\n" +
         "Empty or comments only = no XP blocked. Server-synced.",
         tags: new object[]
         {
@@ -283,7 +283,7 @@ internal static class Settings
     GUILayout.BeginVertical(GUI.skin.box);
     GUILayout.Label(
       "Rules that stop Bombs XP live in a file on the host (not this cfg).\n" +
-      "File: BepInEx/config/skill_bombs/skill_bombs_xp_blocklist.yaml\n" +
+      "File: BepInEx/config/modzified_skill/bombs/modzified_skill_bombs_xp_blocklist.yaml\n" +
       "Leave the file empty (or comments only) = no XP blocked. Server-synced.",
       new GUIStyle(GUI.skin.label) { wordWrap = true });
     GUILayout.EndVertical();

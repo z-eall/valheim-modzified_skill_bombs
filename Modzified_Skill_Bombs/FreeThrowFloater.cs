@@ -2,7 +2,7 @@ using System;
 using System.Reflection;
 using UnityEngine;
 
-namespace Skill_Bombs;
+namespace Modzified_Skill_Bombs;
 
 /// <summary>
 /// Free-throw floater via live <see cref="DamageText.ShowText"/>.

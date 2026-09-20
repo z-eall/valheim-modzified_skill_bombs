@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Skill_Bombs;
+namespace Modzified_Skill_Bombs;
 
 internal sealed class BombsThrowMark : MonoBehaviour
 {

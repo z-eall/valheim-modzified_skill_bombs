@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using HarmonyLib;
 
-namespace Skill_Bombs.Patches;
+namespace Modzified_Skill_Bombs.Patches;
 
 [HarmonyPatch(typeof(Skills), nameof(Skills.Awake))]
 internal static class Skills_Awake_Bombs_Patch

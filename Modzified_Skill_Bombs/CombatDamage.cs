@@ -1,7 +1,7 @@
 using BepInEx.Logging;
 using UnityEngine;
 
-namespace Skill_Bombs;
+namespace Modzified_Skill_Bombs;
 
 /// <summary>Scale throw damage helpers (flask redirect flag, cloud mult, blob stars).</summary>
 internal static class CombatDamage

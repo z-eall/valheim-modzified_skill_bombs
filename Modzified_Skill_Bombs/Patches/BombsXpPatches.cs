@@ -4,7 +4,7 @@ using System.Reflection.Emit;
 using HarmonyLib;
 using UnityEngine;
 
-namespace Skill_Bombs.Patches;
+namespace Modzified_Skill_Bombs.Patches;
 
 [HarmonyPatch(typeof(Projectile), nameof(Projectile.Setup))]
 internal static class Projectile_Setup_BombsXp_Patch

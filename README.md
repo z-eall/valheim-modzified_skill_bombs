@@ -1,4 +1,4 @@
-# Skill_Bombs
+# Modzified_Skill_Bombs
 
 [![Find me here](https://img.shields.io/badge/Find_me_here-Discord-5865F2?logo=discord&logoColor=white&style=flat)](https://discord.gg/VFRJcPwUdm)
 [![Support](https://img.shields.io/badge/Support-Ko--fi-FF5E5B?logo=ko-fi&logoColor=white&style=flat)](https://ko-fi.com/zeall)
@@ -26,13 +26,13 @@ Install on all clients and the server. Server-synced settings follow the host wh
 2. Open the skills tab — **Bombs** should appear.
 3. Throw listed bombs. Higher Bombs = steadier throws.
 4. Optional combat options are in config section `2. Damage and stamina` (all off until you turn them on).
-5. Optional XP blocklist: edit `BepInEx/config/skill_bombs/skill_bombs_xp_blocklist.yaml` on the host (see [XP Gain Blocklist](docs/xp_gain_blocklist.md)).
+5. Optional XP blocklist: edit `BepInEx/config/modzified_skill/bombs/modzified_skill_bombs_xp_blocklist.yaml` on the host (see [XP Gain Blocklist](docs/xp_gain_blocklist.md)).
 
 Listed bombs use the normal bomb throw. Spears and staffs are ignored even if listed.
 
 ## Configuration
 
-File: `BepInEx/config/skill_bombs.cfg`.
+File: `BepInEx/config/modzified_skill_bombs.cfg`.
 
 Server-synced keys follow the host when the server has the mod. Free-throw feedback toggles stay local.
 
@@ -57,7 +57,7 @@ In Configuration Manager the HEIMDIVERS briefing shows as on-page text (not only
 - **Heimdiver Explosive Augmentation** (off by default):
   - Master switch for Heimdiver bomb rules.
   - When on, built-in Augmentation and the options below apply to Heimdiver bombs.
-  - When off, that Augmentation is removed — normal Skill_Bombs.
+  - When off, that Augmentation is removed — normal Modzified_Skill_Bombs.
   - Server-synced.
 - **Dynamite Trajectory Calibration**:
   - How far BombDynamite travels under Augmentation.
@@ -73,7 +73,7 @@ In Configuration Manager the HEIMDIVERS briefing shows as on-page text (not only
 ## XP Gain Blocklist
 
 - Host file for rules that stop Bombs XP. Edit the YAML on disk — not the `.cfg`.
-- File: `BepInEx/config/skill_bombs/skill_bombs_xp_blocklist.yaml`
+- File: `BepInEx/config/modzified_skill/bombs/modzified_skill_bombs_xp_blocklist.yaml`
 - Empty or comments only = no XP blocked. Server-synced.
 - Save on the host; if nothing changes, check the BepInEx log.
 - Field list and examples: [XP Gain Blocklist](docs/xp_gain_blocklist.md)
@@ -86,4 +86,4 @@ In Configuration Manager the HEIMDIVERS briefing shows as on-page text (not only
 
 Huge thanks to DhakhaR for the mod icon!
 
-Source: [<img src="https://cdn.simpleicons.org/github/181717" width="16" height="16" alt="" /> GitHub](https://github.com/z-eall/valheim-skill_bombs)
+Source: [<img src="https://cdn.simpleicons.org/github/181717" width="16" height="16" alt="" /> GitHub](https://github.com/z-eall/valheim-modzified_skill_bombs)

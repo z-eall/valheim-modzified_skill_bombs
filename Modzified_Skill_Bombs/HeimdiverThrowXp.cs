@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using BepInEx.Logging;
 using UnityEngine;
 
-namespace Skill_Bombs;
+namespace Modzified_Skill_Bombs;
 
 /// <summary>Shared HD throw counter under Heimdiver Bomb Override (session statics).</summary>
 internal static class HeimdiverThrowXp

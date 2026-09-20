@@ -6,7 +6,7 @@ using System.Reflection;
 using BepInEx.Logging;
 using UnityEngine;
 
-namespace Skill_Bombs;
+namespace Modzified_Skill_Bombs;
 
 /// <summary>Evaluates locked XP Gain Blocklist rules against the thrower at XP grant.</summary>
 internal static class XpBlocklistMatcher

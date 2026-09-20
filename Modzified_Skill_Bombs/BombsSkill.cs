@@ -1,9 +1,9 @@
 using BepInEx.Logging;
 using UnityEngine;
 
-namespace Skill_Bombs;
+namespace Modzified_Skill_Bombs;
 
-/// <summary>Vanilla-tab skill. Save id is hashed GUID <c>skill_bombs</c>, not the English label Bombs.</summary>
+/// <summary>Vanilla-tab skill. Save id is the hashed GUID <c>modzified_skill_bombs</c>, not the English label Bombs.</summary>
 internal static class BombsSkill
 {
   internal const string TabName = "Bombs";
@@ -24,7 +24,7 @@ internal static class BombsSkill
     if (hash <= (int)Skills.SkillType.All || hash == 878)
     {
       SkillBombsPlugin.LogAt(LogLevel.Error,
-        $"{SkillBombsPlugin.ModName}: skill hash {hash} is not usable (must be > 999, not 878). GUID '{SaveId}' cannot be the save id.");
+        $"{SkillBombsPlugin.ModName}: skill hash {hash} is not usable (must be > 999, not 878). Save id '{SaveId}' is not usable.");
       Ready = false;
       return;
     }

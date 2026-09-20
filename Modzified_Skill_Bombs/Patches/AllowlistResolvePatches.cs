@@ -1,6 +1,6 @@
 using HarmonyLib;
 
-namespace Skill_Bombs.Patches;
+namespace Modzified_Skill_Bombs.Patches;
 
 /// <summary>
 /// UpgradeWorld skips work until <c>ZNet.instance</c> exists (menu has no session).

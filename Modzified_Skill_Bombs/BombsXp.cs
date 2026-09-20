@@ -2,13 +2,13 @@ using System.Collections.Generic;
 using BepInEx.Logging;
 using UnityEngine;
 
-namespace Skill_Bombs;
+namespace Modzified_Skill_Bombs;
 
 /// <summary>One <see cref="Skills.RaiseSkill"/> of Bombs per throw. Stamp + in-memory mark carry the throw.</summary>
 internal static class BombsXp
 {
-  internal const string ThrowerZdoKey = "skill_bombs_thrower";
-  internal const string ThrowIdZdoKey = "skill_bombs_throw";
+  internal const string ThrowerZdoKey = "modzified_skill_bombs_thrower";
+  internal const string ThrowIdZdoKey = "modzified_skill_bombs_throw";
 
   internal static readonly int ThrowerHash = ThrowerZdoKey.GetStableHashCode();
   internal static readonly int ThrowIdHash = ThrowIdZdoKey.GetStableHashCode();

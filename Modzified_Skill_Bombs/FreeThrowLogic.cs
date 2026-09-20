@@ -3,7 +3,7 @@ using System.Reflection;
 using BepInEx.Logging;
 using UnityEngine;
 
-namespace Skill_Bombs;
+namespace Modzified_Skill_Bombs;
 
 internal static class FreeThrowLogic
 {

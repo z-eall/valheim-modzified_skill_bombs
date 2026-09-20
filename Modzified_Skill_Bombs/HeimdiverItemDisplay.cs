@@ -4,7 +4,7 @@ using BepInEx.Logging;
 using HarmonyLib;
 using UnityEngine;
 
-namespace Skill_Bombs;
+namespace Modzified_Skill_Bombs;
 
 /// <summary>
 /// English Heimdiver item name/description while Augmentation is on.

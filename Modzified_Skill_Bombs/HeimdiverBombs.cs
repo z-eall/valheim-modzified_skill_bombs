@@ -2,7 +2,7 @@ using System;
 using BepInEx.Logging;
 using UnityEngine;
 
-namespace Skill_Bombs;
+namespace Modzified_Skill_Bombs;
 
 /// <summary>Hardcoded HD bomb set and Heimdiver Bomb Override gate (Heimdiver Science).</summary>
 internal static class HeimdiverBombs

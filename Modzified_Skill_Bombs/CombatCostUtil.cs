@@ -1,7 +1,7 @@
 using BepInEx.Logging;
 using UnityEngine;
 
-namespace Skill_Bombs;
+namespace Modzified_Skill_Bombs;
 
 /// <summary>
 /// Vanilla attack cost discount lives in <see cref="Attack"/> getters:

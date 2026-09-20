@@ -1,8 +1,8 @@
-namespace Skill_Bombs;
+namespace Modzified_Skill_Bombs;
 
 internal static class BombsXpRpc
 {
-  internal const string Raise = "skill_bombs Raise";
+  internal const string Raise = "modzified_skill_bombs Raise";
 
   private static bool _registered;
 
